@@ -1,41 +1,38 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import Countries from "./components/Countries";
 
 const App = () => {
-  const [value, setValue] = useState("");
-  const [rates, setRates] = useState({});
-  const [currency, setCurrency] = useState(null);
-
-  useEffect(() => {
-    console.log("effect run, currency is now", currency);
-
-    // skip if currency is not defined
-    if (currency) {
-      console.log("fetching exchange rates...");
-      axios
-        .get(`https://open.er-api.com/v6/latest/${currency}`)
-        .then((response) => {
-          setRates(response.data.rates);
-        });
-    }
-  }, [currency]);
+  const [contries, setContries] = useState([]);
+  const [countriesRe, setCountriesRe] = useState([]);
+  const [val, setVal] = useState("");
 
   const handleChange = (event) => {
-    setValue(event.target.value);
+    setVal(event.target.value.trim());
   };
-
-  const onSearch = (event) => {
-    event.preventDefault();
-    setCurrency(value);
-  };
+  useEffect(() => {
+    if (val !== "") {
+      axios
+        .get(`https://studies.cs.helsinki.fi/restcountries/api/all`) // Get all countries
+        .then((response) => {
+          // Filter countries to find ones that contain the "val" anywhere in the name
+          const filteredCountries = response.data.filter((country) =>
+            country.name.common.toLowerCase().includes(val.toLowerCase())
+          );
+          setContries(filteredCountries.map((country) => country.name.common)); // Set matching country names
+        })
+        .catch((error) => {
+          console.error("Error fetching countries:", error);
+        });
+    }
+  }, [val]);
 
   return (
     <div>
-      <form onSubmit={onSearch}>
-        currency: <input value={value} onChange={handleChange} />
-        <button type="submit">exchange rate</button>
-      </form>
-      <pre>{JSON.stringify(rates, null, 2)}</pre>
+      <p>find countries</p>
+
+      <input type="text" onChange={handleChange} />
+      <Countries contries={contries} />
     </div>
   );
 };
