@@ -6,6 +6,8 @@ const App = () => {
   const [contries, setContries] = useState([]);
   const [countriesRe, setCountriesRe] = useState([]);
   const [val, setVal] = useState("");
+  const [show, setShow] = useState(false);
+  const [showNote, setShowNote] = useState(false);
 
   const handleChange = (event) => {
     setVal(event.target.value.trim());
@@ -19,20 +21,39 @@ const App = () => {
           const filteredCountries = response.data.filter((country) =>
             country.name.common.toLowerCase().includes(val.toLowerCase())
           );
-          setContries(filteredCountries.map((country) => country.name.common)); // Set matching country names
+          if (filteredCountries.length > 10) {
+            setShowNote(true);
+            setShow(true);
+          } else {
+            setShowNote(false);
+            setShow(false);
+            setContries(filteredCountries.map((country) => country)); // Set matching country names
+          }
         })
         .catch((error) => {
           console.error("Error fetching countries:", error);
         });
+    } else {
+      setShowNote(false);
+      setContries([]);
     }
   }, [val]);
 
   return (
     <div>
       <p>find countries</p>
-
       <input type="text" onChange={handleChange} />
-      <Countries contries={contries} />
+      {showNote && <p>Too many matches, specify another filter</p>}
+      <ul>
+        {contries.map((ele, index) => (
+          <Countries
+            key={index}
+            country={ele}
+            length={contries.length}
+            conuntries={Countries}
+          />
+        ))}
+      </ul>
     </div>
   );
 };
